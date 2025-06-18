@@ -1,0 +1,126 @@
+Public holydays(30) As Integer
+Public Sub Scheduling()
+    Dim frm As UserForm1
+    Set frm = New UserForm1
+    frm.Show
+    
+    'publicの取得
+    Dim forced As Boolean
+    forced = frm.WasClosedByX
+    Dim year As Integer
+    year = frm.WesternYear 'year
+    Dim mon As Integer
+    mon = frm.month        'mon
+    Dim c As Integer
+    c = frm.countholy      'c
+    
+    'フォームを閉じる
+    Unload frm
+    Set frm = Nothing
+    If forced Then
+        Exit Sub
+    End If
+    
+    
+    '人数計測
+    Dim i As Integer
+    i = 6
+    Dim people As Integer
+    people = 0
+    While Not Cells(i, 1).Value = ""
+        people = people + 1
+        i = i + 1
+    Wend
+    
+    '色リセット
+    Range("A1").Value = year & "年" & mon & "月"
+    Dim firstday As Date
+    firstday = Range("A1").Value
+    Dim lastdayint As Integer
+    lastdayint = Day(Application.WorksheetFunction.EoMonth(firstday, 0))
+    For i = 1 To 31
+        Cells(5, i + 1).Font.Color = RGB(0, 0, 0)
+        If Not Cells(5, i + 1).Interior.Color = RGB(255, 255, 255) Then
+            For j = 4 To 5 + people '最終行
+                Cells(j, i + 1).Interior.Color = RGB(255, 255, 255)
+            Next
+        End If
+    Next
+    
+    '日付の更新
+    Dim tmpi As Integer
+    Dim tmpdate As Date
+    tmpdate = firstday
+    
+    For i = 1 To lastdayint
+        Cells(4, i + 1).Value = i
+        tmpi = Weekday(tmpdate)
+        Cells(5, i + 1) = Choose(tmpi, "日", "月", "火", "水", "木", "金", "土")
+        tmpdate = tmpdate + 1
+    Next
+    For j = i To 32
+        Cells(4, j + 1).ClearContents
+        Cells(5, j + 1).ClearContents
+    Next
+    
+    '祝日色付け
+    Dim RedColor As Long
+    RedColor = 11851260
+    For i = 0 To c - 1
+        Cells(5, holydays(i) + 1).Font.Color = RGB(255, 0, 0)
+        For j = 4 To 5 + people '最終行
+            Cells(j, holydays(i) + 1).Interior.Color = RedColor
+        Next
+    Next
+    
+    '記述
+    '探索
+    Dim attendr As Integer
+    Dim circler As Integer
+    Dim attendflag As Boolean
+    attendflag = True
+    Dim circleflag As Boolean
+    circleflag = True
+    j = lastdayint + 1
+    While attendflag Or circleflag
+        For i = 6 To 5 + people
+            If attendflag Then
+                If Cells(i, j).Text = "出" Then
+                    attendr = i
+                    attendflag = False
+                End If
+            End If
+            If circleflag Then
+                If Cells(i, j).Text = "〇" Then
+                    circler = i
+                    circleflag = False
+                End If
+            End If
+        Next
+        j = j - 1
+    Wend
+    '消去
+    For i = 2 To 32
+        For j = 6 To 5 + people
+            Cells(j, i).Value = ""
+        Next
+    Next
+    '書く
+    attendr = ((attendr + 1 - 6) Mod people) + 6 '次の人の行
+    circler = ((circler + 1 - 6) Mod people) + 6 '次の人の行
+    '出
+    For i = 2 To lastdayint + 1
+        If (Cells(5, i).Value = "土" Or Cells(5, i).Value = "日" Or Cells(5, i).Font.Color = RGB(255, 0, 0)) Then
+                Cells(attendr, i).Value = "出"
+                attendr = ((attendr + 1 - 6) Mod people) + 6 '次の人の行
+        End If
+    Next
+    '〇
+    For i = 2 To lastdayint + 1
+        If Not (Cells(5, i).Value = "土" Or Cells(5, i).Value = "日" Or Cells(5, i).Font.Color = RGB(255, 0, 0)) Then
+                Cells(circler, i).Value = "〇"
+                circler = ((circler + 1 - 6) Mod people) + 6 '次の人の行
+        End If
+    Next
+End Sub
+

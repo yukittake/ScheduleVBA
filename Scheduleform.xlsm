@@ -1,0 +1,71 @@
+Public WasClosedByX As Boolean
+Public WesternYear As Integer
+Public month As Integer
+Public countholy As Integer
+
+
+Private Sub CommandButton1_Click()
+    If Trim(yearbox.Text) = "" Then
+        MsgBox "年が入力されていません", vbExclamation
+        WasClosedByX = True
+        Me.Hide
+        Exit Sub
+    End If
+    WesternYear = CLng(yearbox.Text)
+    
+    If monthbox.ListIndex = -1 Then
+        MsgBox "月が選択されていません", vbExclamation
+        WasClosedByX = True
+        Me.Hide
+        Exit Sub
+    End If
+    month = monthbox.List(monthbox.ListIndex)
+    
+    WasClosedByX = False
+    Me.Hide
+End Sub
+
+Private Sub HolydayAdd_Click()
+    If holydaybox.ListIndex = -1 Then
+        MsgBox "日付が選択されていません", vbExclamation
+    Else
+        Dim flag As Boolean
+        flag = True
+        For i = 0 To countholy - 1
+            If holydays(i) = holydaybox.List(holydaybox.ListIndex) Then
+                flag = False
+            End If
+        Next
+        If flag Then
+            holydays(countholy) = holydaybox.List(holydaybox.ListIndex)
+            Dim tempstr As String
+            For i = 0 To countholy
+                tempstr = tempstr & "," & holydays(i) & "日"
+            Next
+            syuku.Caption = tempstr
+            countholy = countholy + 1
+        End If
+    End If
+End Sub
+
+Private Sub UserForm_Initialize()
+     countholy = 0
+     syuku.Caption = "なし"
+     For i = 1 To 12
+        monthbox.AddItem i
+     Next
+     For i = 1 To 31
+        holydaybox.AddItem i
+    Next
+End Sub
+
+Private Sub UserForm_QueryClose(Cancel As Integer, CloseMode As Integer)
+     If CloseMode = vbFormControlMenu Then
+         WasClosedByX = True
+         Me.Hide
+         Cancel = True
+     End If
+End Sub
+
+
+
