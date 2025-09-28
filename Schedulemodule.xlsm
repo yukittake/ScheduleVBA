@@ -1,5 +1,12 @@
 Public holydays(30) As Integer
 Public Sub Scheduling()
+    Dim yearMonthCell As String
+    yearMonthCell = "A1"
+    Dim peopleFirstCell As String
+    peopleFirstCell = "A6"
+    Dim firstWeekCell As String
+    firstWeekCell = "B5"
+
     Dim frm As UserForm1
     Set frm = New UserForm1
     frm.Show
@@ -24,25 +31,25 @@ Public Sub Scheduling()
     
     '人数計測
     Dim i As Integer
-    i = 6
+    i = Range(peopleFirstCell).Row
     Dim people As Integer
     people = 0
-    While Not Cells(i, 1).Value = ""
+    While Not Cells(i, Range(peopleFirstCell).Column).Value = ""
         people = people + 1
         i = i + 1
     Wend
     
     '色リセット
-    Range("A1").Value = year & "年" & mon & "月"
+    Range(yearMonthCell).Value = year & "年" & mon & "月"
     Dim firstday As Date
-    firstday = Range("A1").Value
+    firstday = Range(yearMonthCell).Value
     Dim lastdayint As Integer
     lastdayint = Day(Application.WorksheetFunction.EoMonth(firstday, 0))
-    For i = 1 To 31
-        Cells(5, i + 1).Font.Color = RGB(0, 0, 0)
-        If Not Cells(5, i + 1).Interior.Color = RGB(255, 255, 255) Then
-            For j = 4 To 5 + people '最終行
-                Cells(j, i + 1).Interior.Color = RGB(255, 255, 255)
+    For i = 0 To 30
+        Cells(Range(firstWeekCell).Row, i + Range(firstWeekCell).Column).Font.Color = RGB(0, 0, 0)
+        If Not Cells(Range(firstWeekCell).Row, i + Range(firstWeekCell).Column).Interior.Color = RGB(255, 255, 255) Then
+            For j = Range(firstWeekCell).Row - 1 To Range(firstWeekCell).Row + people '最終行
+                Cells(j, i + Range(firstWeekCell).Column).Interior.Color = RGB(255, 255, 255)
             Next
         End If
     Next
@@ -52,23 +59,23 @@ Public Sub Scheduling()
     Dim tmpdate As Date
     tmpdate = firstday
     
-    For i = 1 To lastdayint
-        Cells(4, i + 1).Value = i
+    For i = 0 To lastdayint - 1
+        Cells(Range(firstWeekCell).Row - 1, i + Range(firstWeekCell).Column).Value = i + 1
         tmpi = Weekday(tmpdate)
-        Cells(5, i + 1) = Choose(tmpi, "日", "月", "火", "水", "木", "金", "土")
+        Cells(Range(firstWeekCell).Row, i + Range(firstWeekCell).Column) = Choose(tmpi, "日", "月", "火", "水", "木", "金", "土")
         tmpdate = tmpdate + 1
     Next
-    For j = i To 32
-        Cells(4, j + 1).ClearContents
-        Cells(5, j + 1).ClearContents
+    For j = i + 1 To 32
+        Cells(Range(firstWeekCell).Row - 1, j + 1).ClearContents
+        Cells(Range(firstWeekCell).Row, j + 1).ClearContents
     Next
     
     '祝日色付け
     Dim RedColor As Long
     RedColor = 11851260
     For i = 0 To c - 1
-        Cells(5, holydays(i) + 1).Font.Color = RGB(255, 0, 0)
-        For j = 4 To 5 + people '最終行
+        Cells(Range(firstWeekCell).Row, holydays(i) + 1).Font.Color = RGB(255, 0, 0)
+        For j = Range(firstWeekCell).Row - 1 To Range(firstWeekCell).Row + people '最終行
             Cells(j, holydays(i) + 1).Interior.Color = RedColor
         Next
     Next
@@ -83,7 +90,7 @@ Public Sub Scheduling()
     circleflag = True
     j = lastdayint + 1
     While attendflag Or circleflag
-        For i = 6 To 5 + people
+        For i = Range(peopleFirstCell).Row To Range(peopleFirstCell).Row - 1 + people
             If attendflag Then
                 If Cells(i, j).Text = "出" Then
                     attendr = i
@@ -100,27 +107,26 @@ Public Sub Scheduling()
         j = j - 1
     Wend
     '消去
-    For i = 2 To 32
-        For j = 6 To 5 + people
+    For i = Range(firstWeekCell).Column To Range(firstWeekCell).Column + 30
+        For j = Range(peopleFirstCell).Row To Range(peopleFirstCell).Row - 1 + people
             Cells(j, i).Value = ""
         Next
     Next
     '書く
-    attendr = ((attendr + 1 - 6) Mod people) + 6 '次の人の行
-    circler = ((circler + 1 - 6) Mod people) + 6 '次の人の行
+    attendr = ((attendr + 1 - Range(peopleFirstCell).Row) Mod people) + Range(peopleFirstCell).Row '次の人の行
+    circler = ((circler + 1 - Range(peopleFirstCell).Row) Mod people) + Range(peopleFirstCell).Row '次の人の行
     '出
-    For i = 2 To lastdayint + 1
-        If (Cells(5, i).Value = "土" Or Cells(5, i).Value = "日" Or Cells(5, i).Font.Color = RGB(255, 0, 0)) Then
+    For i = Range(firstWeekCell).Column To lastdayint + 1
+        If (Cells(Range(firstWeekCell).Row, i).Value = "土" Or Cells(Range(firstWeekCell).Row, i).Value = "日" Or Cells(Range(firstWeekCell).Row, i).Font.Color = RGB(255, 0, 0)) Then
                 Cells(attendr, i).Value = "出"
-                attendr = ((attendr + 1 - 6) Mod people) + 6 '次の人の行
+                attendr = ((attendr + 1 - Range(peopleFirstCell).Row) Mod people) + Range(peopleFirstCell).Row '次の人の行
         End If
     Next
     '〇
-    For i = 2 To lastdayint + 1
-        If Not (Cells(5, i).Value = "土" Or Cells(5, i).Value = "日" Or Cells(5, i).Font.Color = RGB(255, 0, 0)) Then
+    For i = Range(firstWeekCell).Column To lastdayint + 1
+        If Not (Cells(Range(firstWeekCell).Row, i).Value = "土" Or Cells(Range(firstWeekCell).Row, i).Value = "日" Or Cells(Range(firstWeekCell).Row, i).Font.Color = RGB(255, 0, 0)) Then
                 Cells(circler, i).Value = "〇"
-                circler = ((circler + 1 - 6) Mod people) + 6 '次の人の行
+                circler = ((circler + 1 - Range(peopleFirstCell).Row) Mod people) + Range(peopleFirstCell).Row '次の人の行
         End If
     Next
 End Sub
-
